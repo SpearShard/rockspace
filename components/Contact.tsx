@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Loader2, ArrowRight, CornerRightDown, Terminal, Cpu, Clock, Send, ShieldCheck, Activity } from 'lucide-react';
-import { analyzeProjectIdea } from '../services/geminiService';
-import { AIAnalysis } from '../types';
 
 const InputField = ({ label, name, type = "text", value, onChange, placeholder, required = false }: any) => {
     const [isFocused, setIsFocused] = useState(false);
@@ -69,30 +67,10 @@ export const Contact: React.FC = () => {
     message: ''
   });
   
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success'>('idle');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleAIHelp = async () => {
-    if (formData.message.length < 10) return;
-    setIsAnalyzing(true);
-    setAiAnalysis(null); // Reset previous
-    
-    // Artificial delay for "scanning" effect
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    try {
-        const analysis = await analyzeProjectIdea(formData.message);
-        setAiAnalysis(analysis);
-    } catch (e) {
-        console.error(e);
-    } finally {
-        setIsAnalyzing(false);
-    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -222,10 +200,10 @@ export const Contact: React.FC = () => {
             </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 md:gap-24">
+        <div className="grid grid-cols-1 gap-16 md:gap-24">
             
             {/* Form Column */}
-            <div className="lg:col-span-7">
+            <div className="">
                 <form onSubmit={handleSubmit} className="flex flex-col gap-12">
                     <motion.div 
                         variants={{
@@ -325,21 +303,8 @@ export const Contact: React.FC = () => {
                             <div className="mt-4 flex flex-wrap justify-between items-center gap-4">
                                 <p className="text-xs text-gray-600 font-mono flex items-center gap-2">
                                     <Activity className="w-3 h-3" />
-                                    Minimum 10 characters for AI analysis
+                                    Ready to submit
                                 </p>
-                                <button 
-                                    type="button" 
-                                    onClick={handleAIHelp}
-                                    disabled={isAnalyzing || formData.message.length < 10}
-                                    className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-bold uppercase tracking-widest text-acid group/btn"
-                                >
-                                    {isAnalyzing ? (
-                                        <Loader2 className="w-3 h-3 animate-spin" />
-                                    ) : (
-                                        <Sparkles className="w-3 h-3 group-hover/btn:animate-pulse" />
-                                    )}
-                                    {isAnalyzing ? 'Analyzing Data...' : 'AI Architect Refine'}
-                                </button>
                             </div>
                         </motion.div>
 
@@ -370,137 +335,6 @@ export const Contact: React.FC = () => {
                         </div>
                     </motion.div>
                 </form>
-            </div>
-
-            {/* AI Results Column */}
-            <div className="lg:col-span-5 relative">
-                 <AnimatePresence mode="wait">
-                    {isAnalyzing ? (
-                        <motion.div 
-                            key="analyzing"
-                            initial={{ opacity: 0 }} 
-                            animate={{ opacity: 1 }} 
-                            exit={{ opacity: 0 }}
-                            className="h-full min-h-[400px] border border-acid/20 bg-black/50 backdrop-blur-sm p-8 rounded-2xl flex flex-col items-center justify-center text-center relative overflow-hidden"
-                        >
-                            <div className="absolute inset-0 grid grid-cols-[repeat(20,1fr)] opacity-10">
-                                {[...Array(20)].map((_, i) => (
-                                    <div key={i} className="border-r border-acid/50 h-full"></div>
-                                ))}
-                            </div>
-                            
-                            {/* Scanning Line */}
-                            <motion.div 
-                                className="absolute left-0 w-full h-1 bg-acid/50 shadow-[0_0_20px_#D4FF00] z-20"
-                                animate={{ top: ["0%", "100%", "0%"] }}
-                                transition={{ duration: 3, ease: "linear", repeat: Infinity }}
-                            />
-
-                            <div className="z-30 flex flex-col items-center">
-                                <Cpu className="w-12 h-12 text-acid animate-pulse mb-6" />
-                                <h3 className="text-acid font-mono font-bold uppercase text-lg mb-2">Neural Engine Active</h3>
-                                <div className="font-mono text-xs text-gray-400 space-y-1 text-left w-64">
-                                    <TypewriterText text="> Accessing node clusters..." speed={50} /> <br/>
-                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}>
-                                        
-                                    </motion.div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    ) : !aiAnalysis ? (
-                        <motion.div 
-                            key="empty"
-                            initial={{ opacity: 0 }} 
-                            animate={{ opacity: 1 }} 
-                            exit={{ opacity: 0 }}
-                            className="h-full min-h-[400px] border border-white/5 bg-white/[0.02] p-8 rounded-2xl flex flex-col items-center justify-center text-center group transition-colors hover:border-white/10"
-                        >
-                            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                                <Terminal className="w-8 h-8 text-gray-500 group-hover:text-white transition-colors" />
-                            </div>
-                            <h3 className="text-gray-300 font-display font-bold uppercase text-2xl mb-2">Awaiting Data</h3>
-                            <p className="text-gray-500 font-mono text-xs max-w-xs">
-                                // Enter your project vision to activate the Neural Architect.
-                            </p>
-                        </motion.div>
-                    ) : (
-                        <motion.div 
-                            key="results"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                            className="border border-acid bg-black relative overflow-hidden shadow-[0_0_30px_rgba(212,255,0,0.1)] group"
-                        >
-                            {/* Decorative Header */}
-                            <div className="bg-acid text-black p-3 flex justify-between items-center">
-                                <div className="flex gap-2 items-center">
-                                    <Terminal className="w-4 h-4" />
-                                    <span className="font-mono text-xs font-bold uppercase tracking-widest">Analysis_Result_v2.json</span>
-                                </div>
-                                <div className="flex gap-1">
-                                    <div className="w-2 h-2 rounded-full bg-black animate-pulse"></div>
-                                </div>
-                            </div>
-
-                            <div className="p-8 space-y-8 relative">
-                                {/* Scanline effect */}
-                                <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(transparent_50%,rgba(212,255,0,0.05)_50%)] bg-[length:100%_4px] opacity-50"></div>
-
-                                <div>
-                                    <h4 className="text-[10px] font-bold text-gray-500 uppercase mb-3 flex items-center gap-2 tracking-widest">
-                                        <span className="w-1 h-1 bg-acid"></span> 
-                                        Refined Objective
-                                    </h4>
-                                    <p className="font-mono text-sm leading-relaxed text-acid border-l-2 border-acid/50 pl-4 py-1">
-                                        <TypewriterText text={aiAnalysis.refinedBrief} speed={10} />
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h4 className="text-[10px] font-bold text-gray-500 uppercase mb-3 flex items-center gap-2 tracking-widest">
-                                        <span className="w-1 h-1 bg-acid"></span> 
-                                        Recommended Stack
-                                    </h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {aiAnalysis.suggestedStack.map((tech, i) => (
-                                            <motion.span 
-                                                initial={{ opacity: 0, scale: 0 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                transition={{ delay: i * 0.1 }}
-                                                key={i} 
-                                                className="font-mono text-xs border border-white/20 px-3 py-1 uppercase text-white hover:bg-white hover:text-black transition-colors cursor-default"
-                                            >
-                                                {tech}
-                                            </motion.span>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <h4 className="text-[10px] font-bold text-gray-500 uppercase mb-3 flex items-center gap-2 tracking-widest">
-                                        <Clock className="w-3 h-3 text-acid" />
-                                        Estimated Velocity
-                                    </h4>
-                                    <motion.p 
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.5 }}
-                                        className="font-display font-bold text-3xl text-white"
-                                    >
-                                        {aiAnalysis.estimatedTimeline}
-                                    </motion.p>
-                                </div>
-                            </div>
-                            
-                            <div className="bg-white/5 p-4 border-t border-white/10 flex justify-between items-center">
-                                <p className="font-mono text-[10px] text-gray-500 uppercase">
-                                    // Generated by Rockspace Neural Engine
-                                </p>
-                                <Cpu className="w-4 h-4 text-gray-600" />
-                            </div>
-                        </motion.div>
-                    )}
-                 </AnimatePresence>
             </div>
         </div>
       </div>

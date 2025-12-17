@@ -31,9 +31,3 @@ export interface QuoteRequest {
   idea: string;
   budgetRange: string;
 }
-
-export interface AIAnalysis {
-  refinedBrief: string;
-  suggestedStack: string[];
-  estimatedTimeline: string;
-}
